@@ -1,6 +1,6 @@
 #include <iostream>
 #include <string>
-#include <cmath>
+#include <queue>
 
 using namespace std;
 
@@ -52,11 +52,21 @@ private:
         return value == "+" || value == "-" || value == "*" || value == "/" || value == "^";
     }
 
+    // Tìm node trong cây theo giá trị
+    Node* findNode(Node* node, const string& value) {
+        if (node == nullptr) return nullptr;
+        if (node->value == value) return node;
+
+        Node* leftResult = findNode(node->left, value);
+        if (leftResult != nullptr) return leftResult;
+
+        return findNode(node->right, value);
+    }
+
 public:
     // Hàm khởi tạo
     ExpressionTree() : root(nullptr) {}
 
-    //Kiểm tra rỗng
     bool isEmpty() {
         return root == nullptr;
     }
@@ -71,13 +81,31 @@ public:
         root->right = right;
     }
 
-    void insertNode(Node* parent, const string& value, bool leftChild) {
-        if (leftChild && parent->left == nullptr) {
-            parent->left = new Node(value);
-        } else if (!leftChild && parent->right == nullptr) {
-            parent->right = new Node(value);
+    // Bổ sung phần tử vào cây tại vị trí cụ thể
+    void insertNode(const string& parentValue, const string& value, bool leftChild) {
+        if (isEmpty()) {
+            cout << "Cây đang rỗng. Hãy khởi tạo gốc cây trước!" << endl;
+            return;
+        }
+
+        Node* parent = findNode(root, parentValue);
+        if (parent == nullptr) {
+            cout << "Không tìm thấy node có giá trị: " << parentValue << endl;
+            return;
+        }
+
+        if (leftChild) {
+            if (parent->left == nullptr) {
+                parent->left = new Node(value);
+            } else {
+                cout << "Node này đã có con trái!" << endl;
+            }
         } else {
-            cout << "Node đã có con tại vị trí này!" << endl;
+            if (parent->right == nullptr) {
+                parent->right = new Node(value);
+            } else {
+                cout << "Node này đã có con phải!" << endl;
+            }
         }
     }
 
@@ -100,7 +128,7 @@ public:
 int main() {
     ExpressionTree tree;
 
-    // Xây dựng cây biểu thức
+    // Xây dựng cây biểu thức ban đầu
     Node* a = new Node("a");
     Node* b = new Node("b");
     Node* c = new Node("c");
@@ -147,7 +175,32 @@ int main() {
 
     tree.insertRoot("+", leftSubtree, rightSubtree);
 
-    // In kết quả
+    // In kết quả ban đầu
+    cout << "Biểu thức ban đầu:\n";
+    cout << "Trung tố (Infix): ";
+    tree.printInfix();
+
+    cout << "Tiền tố (Prefix): ";
+    tree.printPrefix();
+
+    cout << "Hậu tố (Postfix): ";
+    tree.printPostfix();
+
+    // Bổ sung phần tử từ người dùng
+    string parentValue, newValue;
+    bool leftChild;
+
+    cout << "\nNhập giá trị của node cha: ";
+    cin >> parentValue;
+    cout << "Nhập giá trị của node mới: ";
+    cin >> newValue;
+    cout << "Thêm vào con trái (1) hay con phải (0): ";
+    cin >> leftChild;
+
+    tree.insertNode(parentValue, newValue, leftChild);
+
+    // In lại cây sau khi bổ sung
+    cout << "\nBiểu thức sau khi bổ sung:\n";
     cout << "Trung tố (Infix): ";
     tree.printInfix();
 
